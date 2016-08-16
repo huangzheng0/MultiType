@@ -19,8 +19,14 @@ package me.drakeet.multitype.sample.page;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import me.drakeet.multitype.ItemContent;
+import me.drakeet.multitype.MultiListener;
 import me.drakeet.multitype.MultiTypeAdapter;
 import me.drakeet.multitype.TypeItem;
 import me.drakeet.multitype.TypeItemFactory;
@@ -28,14 +34,16 @@ import me.drakeet.multitype.sample.ImageItemContent;
 import me.drakeet.multitype.sample.R;
 import me.drakeet.multitype.sample.RichItemContent;
 import me.drakeet.multitype.sample.TextItemContent;
+import me.drakeet.multitype.sample.util.ToastUtil;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MultiListener.MultiOnClickListener {
 
     private TypeItemFactory factory;
     private RecyclerView recyclerView;
 
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = (RecyclerView) findViewById(R.id.list);
@@ -51,7 +59,20 @@ public class MainActivity extends AppCompatActivity {
             typeItems.add(imageItem);
             typeItems.add(richItem);
         }
-
-        recyclerView.setAdapter(new MultiTypeAdapter(typeItems));
+        MultiTypeAdapter adapter = new MultiTypeAdapter(recyclerView, typeItems);
+        HashMap<Class<? extends ItemContent>, int[]> listener = new HashMap<>();
+        listener.put(TextItemContent.class, new int[]{R.id.text});
+        listener.put(ImageItemContent.class, new int[]{R.id.image});
+        listener.put(RichItemContent.class, new int[]{R.id.text, R.id.image});
+        adapter.setMultiListener(new MultiListener(listener, this));
+        recyclerView.setAdapter(adapter);
     }
+
+
+    @Override
+    public void onClick(RecyclerView.ViewHolder viewHolder, View view) {
+        ToastUtil.showToast(getApplicationContext(),
+                String.format("第 %d item %s 被点击了", viewHolder.getAdapterPosition(), view.toString()));
+    }
+
 }
